@@ -1,9 +1,5 @@
 import React from 'react';
 import './Snake.css';
-// import keydown, {Keys} from 'react-keydown';
-//
-// const {UP, DOWN, LEFT, RIGHT} = Keys;
-
 
 function Tile(props) {
   return (
@@ -100,11 +96,6 @@ class Snake extends React.Component {
         snake
       })
     }
-
-
-    this.setState({
-      snake
-    })
   }
 
   handleArrowKey(evt) {
