@@ -33,5 +33,9 @@ code {
 
 
 .hlt {
-  background: grey !important;
+  background: grey;
+}
+
+#bait {
+  background: #282c34;
 }

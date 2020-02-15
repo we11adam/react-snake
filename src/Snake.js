@@ -10,6 +10,7 @@ function Tile(props) {
     <div
       className={'tile ' + (props.shouldHighlight ? 'hlt' : '')}
       data-name={props.name}
+      id={props.isBait ? 'bait' : ''}
     >
     </div>
   )
@@ -27,13 +28,16 @@ class Snake extends React.Component {
     };
     this.state = {
       snake: [
-        {x: 8, y: 3},
-        {x: 8, y: 4},
-        {x: 8, y: 5},
-      ]
+        {x: 8, y: 12},
+        {x: 8, y: 13},
+        {x: 8, y: 14},
+      ],
     };
+    this.state.bait = this.placeBait();
     this.handleArrowKey = this.handleArrowKey.bind(this);
+    this.isTileOfSnake = this.isTileOfSnake.bind(this);
     this.updateDirection();
+
   }
 
   updateDirection() {
@@ -41,7 +45,20 @@ class Snake extends React.Component {
     this.direction = head.x === neck.x ? 'vertical' : 'horizontal';
   }
 
+  placeBait() {
+    const width = this.width;
+    const height = this.height;
+    let x, y;
+    do {
+      x = Math.floor(Math.random() * width);
+      y = Math.floor(Math.random() * height);
+    } while (this.isTileOfSnake({x, y}));
+
+    return {x, y}
+  }
+
   crawl() {
+    let {bait} = this.state;
     const snake = this.state.snake.slice();
     const [head, neck] = snake;
     let newHead;
@@ -60,21 +77,34 @@ class Snake extends React.Component {
       }
     }
 
-    console.log(`newHead: ${JSON.stringify(newHead)}`);
     if (isWallHit(newHead, this.width, this.height)) {
       clearInterval(this.timer);
-      return alert('game over')
+      return alert('game over');
+    }
+
+    if(this.isTileOfSnake(newHead)){
+      clearInterval(this.timer);
+      return alert('game over');
     }
 
     snake.unshift(newHead);
-    snake.pop();
-
     this.newHead = null;
+    if (newHead.x === bait.x && newHead.y === bait.y) {
+      bait = this.placeBait();
+      this.setState({
+        snake, bait
+      })
+    } else {
+      snake.pop();
+      this.setState({
+        snake
+      })
+    }
+
 
     this.setState({
       snake
     })
-
   }
 
   handleArrowKey(evt) {
@@ -102,8 +132,15 @@ class Snake extends React.Component {
       };
     }
 
-    // console.log(`new head: ${JSON.stringify(this.newHead)}`);
+  }
 
+  isTileOfSnake(tile) {
+    for (let part of this.state.snake) {
+      if (part.x === tile.x && part.y === tile.y) {
+        return true;
+      }
+    }
+    return false;
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -114,7 +151,7 @@ class Snake extends React.Component {
     document.addEventListener('keydown', this.handleArrowKey);
     this.timer = setInterval(() => {
       this.crawl();
-    }, 500)
+    }, 250)
   }
 
   componentWillUnmount() {
@@ -124,6 +161,7 @@ class Snake extends React.Component {
 
   render() {
     const {width, height} = this.props;
+    const bait = this.state.bait;
     const tiles = [];
     let y = height - 1;
     while (y >= 0) {
@@ -131,7 +169,8 @@ class Snake extends React.Component {
       while (x < width) {
         tiles.push(
           <Tile
-            shouldHighlight={isTileIncluded({x, y}, this.state.snake)}
+            isBait={bait.x === x && bait.y === y}
+            shouldHighlight={this.isTileOfSnake({x, y})}
             key={`${x}-${y}`}
             name={`${x}-${y}`}
           />);
@@ -143,17 +182,6 @@ class Snake extends React.Component {
   }
 }
 
-function isTileIncluded(tile, snake) {
-  if (!snake || snake.length === 0) {
-    return false;
-  }
-  for (let part of snake) {
-    if (part.x === tile.x && part.y === tile.y) {
-      return true;
-    }
-  }
-  return false;
-}
 
 function isWallHit(tile, width, height) {
   return tile.x < 0 ||
