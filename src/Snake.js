@@ -31,7 +31,6 @@ class Snake extends React.Component {
     };
     this.state.bait = this.placeBait();
     this.handleArrowKey = this.handleArrowKey.bind(this);
-    this.isTileOfSnake = this.isTileOfSnake.bind(this);
     this.updateDirection();
 
   }
@@ -78,7 +77,7 @@ class Snake extends React.Component {
       return alert('game over');
     }
 
-    if(this.isTileOfSnake(newHead)){
+    if (this.isTileOfSnake(newHead)) {
       clearInterval(this.timer);
       return alert('game over');
     }
